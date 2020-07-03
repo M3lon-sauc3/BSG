@@ -1,76 +1,79 @@
 import pygame
 import os
+import sys
 import time
 from pygame import mixer
-import Sprite
-
-'''
-Objects
-'''
+from Sprite1 import *
+from settings import *
 
 '''
 Setup
 '''
-width = 960
-height = 720
+pygame.init()
 
-fps = 40        # frame rate
-#ani = 4        # animation cycles
 clock = pygame.time.Clock()
-pygame.init()
-main = True
 
-pygame.init()
-FPSCLOCK = pygame.time.Clock()
-DISLAYSURF = pygame.display.set_mode((width,height))
-
-surface = pygame.display.set_mode([width,height])
-pygame.display.set_caption('B.S.G.!!!')
-background = pygame.image.load(os.path.join('images','Bg.png')).convert()
-backdropbox = surface.get_rect()
 pygame.mixer.music.load('.\\sounds\\Fairy.mp3')
 pygame.mixer.music.play(-1, 0.0)
 
-player = Sprite.Player()   # spawn player
+all_sprites = pygame.sprite.Group()
+player = Player(all_sprites)
+
 player.rect.x = 50
 player.rect.y = 500
-player_list = pygame.sprite.Group()
-player_list.add(player)
-steps = 10      # how fast to move
 
-Sprite.showStartScreen(surface)
+
+
+
+showStartScreen(surface)
+
 '''
 Main loop
 '''
+
+main = True
+
 while main == True:
+
+    background = pygame.image.load(os.path.join('images', 'Bg.png'))
+    surface.blit(background, (0,0))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit(); sys.exit()
+            pygame.quit()
+            sys.exit()
             main = False
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == ord('a'):
                 player.control(-steps,0)
+
             if event.key == pygame.K_RIGHT or event.key == ord('d'):
                 player.control(steps,0)
-            if event.key == pygame.K_UP or event.key == ord('w'):
-                player.rect.y -= 100
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == ord('a'):
                 player.control(steps,0)
+
             if event.key == pygame.K_RIGHT or event.key == ord('d'):
                 player.control(-steps,0)
-            if event.key == pygame.K_UP or event.key == ord('w'):
-                player.rect.y += 100
-            if event.key == ord('q'):
-                pygame.quit()
-                sys.exit()
-                main = False
 
-    surface.blit(background, (0, 0))
-    player.update()
-    player_list.draw(surface) #refresh player position
+    keys = pygame.key.get_pressed()
+    if not(isJump):
+        if keys[pygame.K_UP]:
+            isJump = True
+    else:
+        if jumpCount >= -10:
+            player.rect.y -= (jumpCount * abs(jumpCount)) * 1
+            jumpCount -= 2
+        else:
+            jumpCount = 10
+            isJump = False
+
+    # dt = time since last tick in milliseconds.
+    dt = clock.tick(60) / 1000
+    all_sprites.update(dt)
+    player.update(dt)
+    all_sprites.draw(surface) #refresh player position
     pygame.display.flip()
-    clock.tick(fps)
+
