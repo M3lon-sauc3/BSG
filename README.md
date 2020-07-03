@@ -1,2 +1,2 @@
 # BSG
-First game
+First game using pygame
